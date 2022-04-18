@@ -6,9 +6,8 @@ format: html
 editor: visual
 ---
 
-```{r install packaged}
-devtools::install_github("sharlagelfand/ggkeyboard", ref = "main")
-install.packages("countcolors")
+```{r install packages}
+#devtools::install_github("sharlagelfand/ggkeyboard", ref = "main")
 ```
 
 ```{r load packages}
@@ -73,12 +72,12 @@ wordle_counts_ordered
 ggkeyboard(sixty_percent, palette = keyboard_palette("magic")) %>%
   highlight_keys(wordle_counts_ordered$key, fill = wordle_counts_ordered$color, alpha = wordle_counts_ordered$brightness,
                  colour = NA)
+  
 ```
 
 ```{r get pixels to display color scale}
 color_bar = sapply(1:1560, color_scale_rgb)
 rgb_vec = color_bar %>% t()
-rgb_vec %>% dim()
 rgb_mat = array(0, c(50, 1560, 3))
 for (i in 1:50) {
   rgb_mat[i, 1:1560, 1] = rgb_vec[1:1560, 1]
@@ -88,6 +87,6 @@ for (i in 1:50) {
 ```
 
 ```{r visualize color scale}
-
-plotArrayAsImage(rgb_mat, main = "Color Scale")
+df = tibble(x = seq(1, 1560, 1), n=1, color = sapply(1:1560, color_scale)[seq(1, 1560, 1)])
+barplot(space = 0, height = df$n, col = df$color, names.arg = df$x, xlab = "Letter Frequency", axes=F, main = "Color Scale", border=NA)
 ```
