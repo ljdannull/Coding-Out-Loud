@@ -1,0 +1,85 @@
+---
+title: "main"
+format: html
+editor: visual
+---
+
+```{r}
+devtools::install_github("sharlagelfand/ggkeyboard", ref = "main")
+```
+
+```{r}
+library(tidyverse)
+library(ggkeyboard)
+```
+
+```{r}
+wordle = read_csv("https://raw.githubusercontent.com/tabatkins/wordle-list/main/words", col_names="word")
+
+wordle = wordle %>% 
+  mutate(first_letter = str_sub(word, start=1, end=1))
+first_counts = wordle %>% count(first_letter)
+```
+
+dark blue - "#2D669B"
+
+light blue - "#359CA8"
+
+green - "#B8C222"
+
+yellow - "#EEDD49"
+
+orange - "#F2BC4A"
+
+dark orange - "#FB704A"
+
+red - "#BE372C"
+
+```{r}
+first_counts %>%
+  summarise(
+    min = min(n),
+    mean = mean(n),
+    sd = sd(n),
+    max = max(n),
+    q20 = quantile(n, 0.20),
+    q40 = quantile(n, 0.40),
+    q60 = quantile(n, 0.60),
+    q80 = quantile(n, 0.80)
+  )
+```
+
+```{r}
+color_scale = function(x) {
+  pct = x / 1600
+  return(rgb(pct, max(0, pct - 0.5), (1 - pct) / 2))
+}
+alpha = function(x) {
+  pct = x / 1600
+  return(0.2 + pct * 0.3)
+}
+colors = first_counts %>% mutate(color = sapply(n, color_scale)) %>% mutate(first_letter = sapply(first_letter, toupper))
+colors
+```
+
+```{r}
+keys <- read_csv("https://raw.githubusercontent.com/sharlagelfand/ggkeyboard/061f0d9084d76d576200e81439311983e1d50d93/data-raw/sixty_percent.csv")
+wordle_counts_ordered <- keys %>% 
+  select(key) %>%
+  left_join(colors, by = c("key" = "first_letter"))
+
+wordle_counts_ordered$n[is.na(wordle_counts_ordered$n)] = 0
+wordle_counts_ordered = wordle_counts_ordered %>% mutate(color = sapply(n, color_scale),
+                                                         brightness = sapply(n, alpha))
+wordle_counts_ordered
+```
+
+```{r}
+ggkeyboard(sixty_percent, palette = keyboard_palette("magic")) %>%
+  highlight_keys(wordle_counts_ordered$key, fill = wordle_counts_ordered$color, alpha = wordle_counts_ordered$brightness,
+                 colour = NA)
+```
+
+```{r}
+
+```
