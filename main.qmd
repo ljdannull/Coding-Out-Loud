@@ -72,7 +72,7 @@ wordle_counts_ordered
 ggkeyboard(sixty_percent, palette = keyboard_palette("magic")) %>%
   highlight_keys(wordle_counts_ordered$key, fill = wordle_counts_ordered$color, alpha = wordle_counts_ordered$brightness,
                  colour = NA)
-  
+#ggsave("keyboard.png")
 ```
 
 ```{r get pixels to display color scale}
@@ -87,6 +87,8 @@ for (i in 1:50) {
 ```
 
 ```{r visualize color scale}
-df = tibble(x = seq(1, 1560, 1), n=1, color = sapply(1:1560, color_scale)[seq(1, 1560, 1)])
+df = tibble(x = seq(1, 1560, 10), n=1, color = sapply(1:1560, color_scale)[seq(1, 1560, 10)])
+#png("color_scale.png")
 barplot(space = 0, height = df$n, col = df$color, names.arg = df$x, xlab = "Letter Frequency", axes=F, main = "Color Scale", border=NA)
+#dev.off()
 ```
