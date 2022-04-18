@@ -1,19 +1,23 @@
 ---
-title: "main"
+title: "Keyboard Visualization"
+author: "Lukas Dannull"
+date: "4/18/22"
 format: html
 editor: visual
 ---
 
-```{r}
+```{r install packaged}
 devtools::install_github("sharlagelfand/ggkeyboard", ref = "main")
+install.packages("countcolors")
 ```
 
-```{r}
+```{r load packages}
 library(tidyverse)
 library(ggkeyboard)
+library(countcolors)
 ```
 
-```{r}
+```{r load data, get first letter counts}
 wordle = read_csv("https://raw.githubusercontent.com/tabatkins/wordle-list/main/words", col_names="word")
 
 wordle = wordle %>% 
@@ -21,7 +25,7 @@ wordle = wordle %>%
 first_counts = wordle %>% count(first_letter)
 ```
 
-```{r}
+```{r summary statistics of counts}
 first_counts %>%
   summarise(
     min = min(n),
@@ -35,17 +39,17 @@ first_counts %>%
   )
 ```
 
-```{r}
+```{r get color from count of occurrences}
 color_scale = function(x) {
-  pct = x / 1600
+  pct = x / 1560
   return(rgb(pct, max(0, pct - 0.5), (1 - pct) / 2))
 }
 color_scale_rgb = function(x) {
-  pct = x / 1600
+  pct = x / 1560
   return(c(pct, max(0, pct - 0.5), (1 - pct) / 2))
 }
 alpha = function(x) {
-  pct = x / 1600
+  pct = x / 1560
   #return(0.2 + pct * 0.3)
   return(0.7 - pct * 0.3)
 }
@@ -53,7 +57,7 @@ colors = first_counts %>% mutate(color = sapply(n, color_scale)) %>% mutate(firs
 colors
 ```
 
-```{r}
+```{r order keys right to left, top to bottom}
 keys <- read_csv("https://raw.githubusercontent.com/sharlagelfand/ggkeyboard/061f0d9084d76d576200e81439311983e1d50d93/data-raw/sixty_percent.csv")
 wordle_counts_ordered <- keys %>% 
   select(key) %>%
@@ -65,38 +69,25 @@ wordle_counts_ordered = wordle_counts_ordered %>% mutate(color = sapply(n, color
 wordle_counts_ordered
 ```
 
-```{r}
+```{r keyboard visualization}
 ggkeyboard(sixty_percent, palette = keyboard_palette("magic")) %>%
   highlight_keys(wordle_counts_ordered$key, fill = wordle_counts_ordered$color, alpha = wordle_counts_ordered$brightness,
                  colour = NA)
 ```
 
-```{r}
-color_bar = sapply(1:1600, color_scale_rgb)
+```{r get pixels to display color scale}
+color_bar = sapply(1:1560, color_scale_rgb)
 rgb_vec = color_bar %>% t()
 rgb_vec %>% dim()
-rgb_mat = array(0, c(50, 1600, 3))
+rgb_mat = array(0, c(50, 1560, 3))
 for (i in 1:50) {
-rgb_mat[i, 1:1600, 1] = rgb_vec[1:1600, 1]
-rgb_mat[i, 1:1600, 2] = rgb_vec[1:1600, 2]
-rgb_mat[i, 1:1600, 3] = rgb_vec[1:1600, 3]
+  rgb_mat[i, 1:1560, 1] = rgb_vec[1:1560, 1]
+  rgb_mat[i, 1:1560, 2] = rgb_vec[1:1560, 2]
+  rgb_mat[i, 1:1560, 3] = rgb_vec[1:1560, 3]
 }
-
-
-
 ```
 
-```{r}
-library(countcolors)
+```{r visualize color scale}
+
 plotArrayAsImage(rgb_mat, main = "Color Scale")
-```
-
-```{r}
-x <- y <- seq(-4*pi, 4*pi, length.out = 27)
-r <- sqrt(outer(x^2, y^2, "+"))
-image(z = z <- cos(r^2)*exp(-r/6), col = gray.colors(33))
-image(z, axes = FALSE, main = "Math can be beautiful ...",
-      xlab = expression(cos(r^2) * e^{-r/6}))
-x
-y
 ```
